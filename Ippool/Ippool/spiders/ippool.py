@@ -10,6 +10,8 @@ import redis
 #导入多线程
 from threading import Thread
 
+#创造item
+from ..items import IppoolItem
 
 class IppoolSpider(scrapy.Spider):
     name = 'ippool'
@@ -19,8 +21,14 @@ class IppoolSpider(scrapy.Spider):
     #因为不想要先丢个url再爬取,所以这里要重写方法
     #重写Spider类中的start_requests方法
     def start_requests(self):
-        # 连接redis数据库
-        self.r = redis.Redis(host='127.0.0.1', port=6379, db=0)
+        # 变量引用自settings
+        # 连接redis数据库 设为存入的是字符串
+        pool = redis.ConnectionPool(host='127.0.0.1', port=6379, db=0, decode_responses=True)
+        self.r = redis.Redis(connection_pool=pool)
+        #清除集合
+        self.r.delete("ip_port")
+        print('删除Redis数据库中ip_port集合完毕,准备录入新数据...')
+
         # 累计可用的IP和端口号
         self.useip_list = []
         prevsn = 1
@@ -34,19 +42,13 @@ class IppoolSpider(scrapy.Spider):
             )
             prevsn += 1
 
-    # 获取首页的IP
+    # 获取首页的天IP
     def parse_ip(self, response):
         #正则 匹配出每个ip
         p = '<tr.*?</td>.*?<td>(.*?)</td>.*?<td>(.*?)</td>.*?<td>.*?</td>.*?<td.*?</td>.*?<td>.*?</td>.*?<td.*?</td>.*?<td.*?</td>.*?<td>(.*?)</td>.*?<td.*?</td>.*?</tr>'
         re_obj = re.compile(p, re.S)
         ip_list = re_obj.findall(response.text)
-        print(ip_list)
-        # 获取天为单位的ip
-        self.try_ip(ip_list)
-
-    #尝试以天为单位的IP是否可用
-    def try_ip(self, ip_list):
-        print('try_pi函数')
+        yield print(ip_list)
         #遍历
         for i in ip_list:
             #如果是包含天的IP
@@ -74,15 +76,21 @@ class IppoolSpider(scrapy.Spider):
                     # 启动线程
                     t.start()
                     # self.try_ipuse(ip_one, port_one)
-                else:
-                    #回收线程
+                #如果线程太多了
+                elif threads_list > 10:
+                    #判断线程是否活动
+                    #当线程处于新建、死亡两种状态时，is_alive()方法返回False
                     for t in threads_list:
-                        t.join()
+                        if not t.is_alive():
+                            #回收这个线程
+                            t.join()
+
+
 
 
     #尝试链接的函数
     def try_ipuse(self, ip_one, port_one):
-        print('尝试链接')
+        print('测试ip')
         # 测试网站
         url = 'http://httpbin.org/get'
         # 要尝试的IP
@@ -101,8 +109,8 @@ class IppoolSpider(scrapy.Spider):
                 self.useip_list.append(use_one)
                 # 添加入redis数据库 添加集合
                 self.r.sadd('ip_port', str(use_one))
-                print(use_one)
-                print('已添加入redis')
+                print('已添加一个有效数据入redis')
+
 
         except Exception as e:
             print('代理IP不可用:', e)

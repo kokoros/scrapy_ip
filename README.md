@@ -1,4 +1,4 @@
-Pro_web:ip_pool 西刺ip池爬取
+Pro:ip_pool 西刺ip池爬取
 ===================
 
 爬取10个至少一天的可用ip和端口号,保存在Redis数据库中

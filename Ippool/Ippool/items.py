@@ -11,9 +11,6 @@ import scrapy
 class IppoolItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    #所有ip
-    ip_list = scrapy.Field()
-    #有效的ip和port
-    ip = scrapy.Field()
-    port = scrapy.Field()
+    #有效ip
+    ip_port = scrapy.Field()
 
