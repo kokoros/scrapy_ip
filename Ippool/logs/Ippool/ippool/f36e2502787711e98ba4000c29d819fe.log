@@ -1,0 +1,15 @@
+2019-05-17 15:47:11 [scrapy.core.scraper] ERROR: Spider error processing <GET https://www.xicidaili.com/nn/9> (referer: None)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/utils/defer.py", line 102, in iter_errback
+    yield next(it)
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/spidermiddlewares/offsite.py", line 29, in process_spider_output
+    for x in result:
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/spidermiddlewares/referer.py", line 339, in <genexpr>
+    return (_set_referer(r) for r in result or ())
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/spidermiddlewares/urllength.py", line 37, in <genexpr>
+    return (r for r in result or () if _filter(r))
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/spidermiddlewares/depth.py", line 58, in <genexpr>
+    return (r for r in result or () if _filter(r))
+  File "/home/koro/Scrapy_ip/Ippool/Ippool/spiders/ippool.py", line 80, in parse_ip
+    elif threads_list > 10:
+TypeError: '>' not supported between instances of 'list' and 'int'
